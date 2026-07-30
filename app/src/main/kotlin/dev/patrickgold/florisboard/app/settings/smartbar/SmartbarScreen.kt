@@ -18,15 +18,26 @@ package dev.patrickgold.florisboard.app.settings.smartbar
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import dev.patrickgold.florisboard.R
 import dev.patrickgold.florisboard.app.enumDisplayEntriesOf
+import dev.patrickgold.florisboard.app.settings.theme.DialogProperty
 import dev.patrickgold.florisboard.ime.smartbar.CandidatesDisplayMode
 import dev.patrickgold.florisboard.ime.smartbar.ExtendedActionsPlacement
 import dev.patrickgold.florisboard.ime.smartbar.SmartbarLayout
 import dev.patrickgold.florisboard.lib.compose.FlorisScreen
+import dev.patrickgold.jetpref.datastore.model.collectAsState
 import dev.patrickgold.jetpref.datastore.ui.ListPreference
+import dev.patrickgold.jetpref.datastore.ui.Preference
 import dev.patrickgold.jetpref.datastore.ui.PreferenceGroup
 import dev.patrickgold.jetpref.datastore.ui.SwitchPreference
+import dev.patrickgold.jetpref.material.ui.JetPrefAlertDialog
+import dev.patrickgold.jetpref.material.ui.JetPrefTextField
+import kotlinx.coroutines.launch
 import org.florisboard.lib.compose.stringRes
 
 @Composable
@@ -84,6 +95,39 @@ fun SmartbarScreen() = FlorisScreen {
                 enabledIf = { prefs.smartbar.enabled isEqualTo true },
                 visibleIf = { prefs.smartbar.layout isEqualTo SmartbarLayout.SUGGESTIONS_ACTIONS_EXTENDED },
             )
+        }
+
+        PreferenceGroup(title = stringRes(R.string.pref__voice_input__group__label)) {
+            val scope = rememberCoroutineScope()
+            val endpointUrl by prefs.voiceInput.endpointUrl.collectAsState()
+            var showEndpointUrlDialog by rememberSaveable { mutableStateOf(false) }
+            Preference(
+                title = stringRes(R.string.pref__voice_input__endpoint_url__label),
+                summary = endpointUrl.ifBlank {
+                    stringRes(R.string.pref__voice_input__endpoint_url__summary_empty)
+                },
+                onClick = { showEndpointUrlDialog = true },
+            )
+            if (showEndpointUrlDialog) {
+                var urlInput by rememberSaveable { mutableStateOf(endpointUrl) }
+                JetPrefAlertDialog(
+                    title = stringRes(R.string.voice_input__dialog__title),
+                    confirmLabel = stringRes(R.string.action__apply),
+                    onConfirm = {
+                        scope.launch { prefs.voiceInput.endpointUrl.set(urlInput.trim()) }
+                        showEndpointUrlDialog = false
+                    },
+                    dismissLabel = stringRes(R.string.action__cancel),
+                    onDismiss = { showEndpointUrlDialog = false },
+                ) {
+                    DialogProperty(text = stringRes(R.string.voice_input__dialog__url_label)) {
+                        JetPrefTextField(
+                            value = urlInput,
+                            onValueChange = { urlInput = it },
+                        )
+                    }
+                }
+            }
         }
     }
 }

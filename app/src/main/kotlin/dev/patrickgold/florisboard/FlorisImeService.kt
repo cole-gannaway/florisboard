@@ -32,7 +32,6 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InlineSuggestionsRequest
 import android.view.inputmethod.InlineSuggestionsResponse
 import android.view.inputmethod.InputConnection
-import android.view.inputmethod.InputMethodInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.inline.InlinePresentationSpec
 import androidx.annotation.RequiresApi
@@ -67,7 +66,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import org.florisboard.lib.android.AndroidInternalR
 import org.florisboard.lib.android.AndroidVersion
-import org.florisboard.lib.android.showShortToastSync
 import org.florisboard.lib.android.systemServiceOrNull
 import org.florisboard.lib.kotlin.collectIn
 import org.florisboard.lib.kotlin.collectLatestIn
@@ -130,11 +128,6 @@ class FlorisImeService : LifecycleInputMethodService() {
         fun switchToNextInputMethod(): Boolean {
             val ims = FlorisImeServiceReference.get() ?: return false
             return ims.switchToNextInputMethod()
-        }
-
-        fun switchToVoiceInputMethod(): Boolean {
-            val ims = FlorisImeServiceReference.get() ?: return false
-            return ims.switchToVoiceInputMethod()
         }
 
         fun showImePicker(): Boolean {
@@ -218,40 +211,6 @@ class FlorisImeService : LifecycleInputMethodService() {
             flogError { "Unable to switch to the next IME" }
             imm?.showInputMethodPicker()
         }
-        return false
-    }
-
-    /**
-     * Switch to next input method
-     *
-     * Note: The inner part of this function can be replaced with a
-     *
-     * `switchInputMethod(el.id, el.getSubtypeAt(i))` call once we've set the minApiLevel to 28 (Android 9)
-     *
-     * @return true if the switch was successful
-     */
-    fun switchToVoiceInputMethod(): Boolean {
-        val imm = systemServiceOrNull(InputMethodManager::class) ?: return false
-        val list: List<InputMethodInfo> = imm.enabledInputMethodList
-        for (el in list) {
-            for (i in 0 until el.subtypeCount) {
-                // Check if the subtype is a voice input method.
-                // We need to hardcode 'voice' here because the SUBTYPE_MODE_VOICE constant is private.
-                // https://cs.android.com/android/platform/superproject/+/android-latest-release:frameworks/base/core/java/android/view/inputmethod/InputMethodManager.java;drc=2b278ab3ac73bb5596327aac1298df85cd94e454;l=309
-                if (el.getSubtypeAt(i).mode != "voice") continue
-                if (AndroidVersion.ATLEAST_API28_P) {
-                    switchInputMethod(el.id, el.getSubtypeAt(i))
-                    return true
-                } else {
-                    window.window?.let { window ->
-                        @Suppress("DEPRECATION")
-                        imm.setInputMethod(window.attributes.token, el.id)
-                        return true
-                    }
-                }
-            }
-        }
-        showShortToastSync("Failed to find voice IME, do you have one installed?")
         return false
     }
 

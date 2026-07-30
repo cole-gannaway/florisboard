@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.SentimentSatisfiedAlt
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SpaceBar
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.ui.graphics.vector.ImageVector
 import dev.patrickgold.florisboard.FlorisImeService
 import dev.patrickgold.florisboard.R
@@ -56,9 +57,11 @@ import dev.patrickgold.florisboard.ime.editor.ImeOptions
 import dev.patrickgold.florisboard.ime.input.InputShiftState
 import dev.patrickgold.florisboard.ime.text.key.KeyCode
 import dev.patrickgold.florisboard.ime.text.key.KeyType
+import dev.patrickgold.florisboard.ime.voiceinput.VoiceInputState
 import dev.patrickgold.florisboard.ime.window.ImeWindowMode
 import dev.patrickgold.florisboard.lib.FlorisLocale
 import dev.patrickgold.florisboard.lib.compose.vectorResource
+import dev.patrickgold.florisboard.voiceInputManager
 import org.florisboard.lib.compose.icons.ForwardDelete
 
 interface ComputingEvaluator {
@@ -227,7 +230,9 @@ fun ComputingEvaluator.computeImageVector(data: KeyData): ImageVector? {
             context()?.vectorResource(id = R.drawable.ic_resize)
         }
         KeyCode.VOICE_INPUT -> {
-            Icons.Default.KeyboardVoice
+            val isRecording = evaluator.context()?.voiceInputManager()?.value?.state?.value ==
+                VoiceInputState.RECORDING
+            if (isRecording) Icons.Default.Stop else Icons.Default.KeyboardVoice
         }
         KeyCode.IME_HIDE_UI -> {
             Icons.Default.KeyboardHide
