@@ -8,6 +8,12 @@
     <!-- Permission needed to create notifications on devices running Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
+    <!-- Permission needed to record audio for the voice input feature -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+    <!-- Permission needed to upload recorded audio to a user-configured transcription endpoint -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <!-- Android 11+ only: Define that FlorisBoard requests to see all apps that
           ship with an IME or Spell Check service. This is used to guide the user
           in the Settings Ui why FlorisBoard may not be working.
@@ -29,6 +35,7 @@
         android:icon="@mipmap/floris_app_icon"
         android:label="@string/floris_app_name"
         android:enableOnBackInvokedCallback="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/floris_app_icon_round"
         android:supportsRtl="true"
         android:theme="@style/FlorisAppTheme"
@@ -129,6 +136,13 @@
                 <data android:mimeType="image/*"/>
             </intent-filter>
         </activity>
+
+        <!-- Voice Input Permission Request Activity -->
+        <activity
+            android:name="dev.patrickgold.florisboard.ime.voiceinput.VoiceInputPermissionActivity"
+            android:theme="@style/FlorisAppTheme.Transparent"
+            android:excludeFromRecents="true"
+            android:exported="false"/>
 
         <!-- Clipboard Media File Provider -->
         <provider

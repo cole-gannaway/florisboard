@@ -94,7 +94,7 @@
     <string name="quick_action__toggle_autocorrect" comment="Please mind the limited available space for the quick action strings">Autocorrect</string>
     <string name="quick_action__toggle_autocorrect__tooltip">Toggle autocorrect</string>
     <string name="quick_action__voice_input" comment="Please mind the limited available space for the quick action strings">Voice input</string>
-    <string name="quick_action__voice_input__tooltip" comment="IME stands for Input Method Editor and is indirectly equivalent to 'keyboard'.">Open voice input provider</string>
+    <string name="quick_action__voice_input__tooltip">Tap to start or stop recording and transcribe your speech</string>
     <string name="quick_action__floating_window_mode" comment="Please mind the limited available space for the quick action strings">Floating</string>
     <string name="quick_action__floating_window_mode__tooltip">Toggle floating keyboard window mode</string>
     <string name="quick_action__one_handed_mode" comment="Please mind the limited available space for the quick action strings">One-handed</string>
@@ -474,6 +474,16 @@
     <string name="pref__smartbar__shared_actions_auto_expand_collapse__label" comment="Preference title">Auto-expand/collapse</string>
     <string name="pref__smartbar__shared_actions_auto_expand_collapse__summary" comment="Preference summary">Auto-expands/collapses the shared action row based on current state</string>
     <string name="pref__smartbar__extended_actions_placement__label" comment="Preference title">Action row placement</string>
+
+    <!-- Voice input strings -->
+    <string name="pref__voice_input__group__label" comment="Preference group title">Voice input</string>
+    <string name="pref__voice_input__endpoint_url__label" comment="Preference title">Transcription endpoint URL</string>
+    <string name="pref__voice_input__endpoint_url__summary_empty" comment="Preference summary shown when no URL is set">Not set — the microphone button will show an error until this is configured</string>
+    <string name="voice_input__dialog__title" comment="Dialog title">Transcription endpoint URL</string>
+    <string name="voice_input__dialog__url_label" comment="Dialog text field label">An OpenAI-compatible audio transcription endpoint, e.g. https://api.openai.com/v1/audio/transcriptions</string>
+    <string name="voice_input__permission_granted" comment="Toast shown after the user grants the microphone permission">Microphone permission granted, tap the mic button again to start recording</string>
+    <string name="voice_input__permission_denied" comment="Toast shown after the user denies the microphone permission">Microphone permission denied</string>
+    <string name="voice_input__transcription_error" comment="Toast shown when recording upload or transcription fails">Voice transcription failed</string>
 
     <!-- Typing strings -->
     <string name="settings__typing__title" comment="Title of Typing screen">Typing</string>

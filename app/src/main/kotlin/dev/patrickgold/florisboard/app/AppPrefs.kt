@@ -660,6 +660,14 @@ abstract class FlorisPreferenceModel : PreferenceModel() {
         )
     }
 
+    val voiceInput = VoiceInput()
+    inner class VoiceInput {
+        val endpointUrl = string(
+            key = "voice_input__endpoint_url",
+            default = "",
+        )
+    }
+
     val spelling = Spelling()
     inner class Spelling {
         val languageMode = enum(

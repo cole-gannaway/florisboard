@@ -26,12 +26,16 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import dev.patrickgold.compose.tooltip.PlainTooltip
@@ -39,8 +43,11 @@ import dev.patrickgold.florisboard.ime.input.LocalInputFeedbackController
 import dev.patrickgold.florisboard.ime.keyboard.ComputingEvaluator
 import dev.patrickgold.florisboard.ime.keyboard.computeImageVector
 import dev.patrickgold.florisboard.ime.keyboard.computeLabel
+import dev.patrickgold.florisboard.ime.text.key.KeyCode
 import dev.patrickgold.florisboard.ime.text.keyboard.TextKeyData
 import dev.patrickgold.florisboard.ime.theme.FlorisImeUi
+import dev.patrickgold.florisboard.ime.voiceinput.VoiceInputState
+import dev.patrickgold.florisboard.voiceInputManager
 import org.florisboard.lib.snygg.SnyggSelector
 import org.florisboard.lib.snygg.ui.SnyggBox
 import org.florisboard.lib.snygg.ui.SnyggIcon
@@ -131,7 +138,20 @@ fun QuickActionButton(
                                 attributes = attributes,
                                 selector = selector,
                             ) {
-                                SnyggIcon(imageVector = imageVector)
+                                if (action.data.code == KeyCode.VOICE_INPUT) {
+                                    val isRecording by context.voiceInputManager().value.state.collectAsState()
+                                    Icon(
+                                        imageVector = imageVector,
+                                        contentDescription = null,
+                                        tint = if (isRecording == VoiceInputState.RECORDING) {
+                                            Color.Red
+                                        } else {
+                                            LocalContentColor.current
+                                        },
+                                    )
+                                } else {
+                                    SnyggIcon(imageVector = imageVector)
+                                }
                             }
                         } else if (label != null) {
                             SnyggText(

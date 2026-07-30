@@ -17,6 +17,7 @@
 package dev.patrickgold.florisboard.ime.keyboard
 
 import android.content.Context
+import android.content.Intent
 import android.icu.lang.UCharacter
 import android.view.KeyEvent
 import android.widget.Toast
@@ -54,6 +55,8 @@ import dev.patrickgold.florisboard.ime.text.key.KeyType
 import dev.patrickgold.florisboard.ime.text.key.UtilityKeyAction
 import dev.patrickgold.florisboard.ime.text.keyboard.TextKeyData
 import dev.patrickgold.florisboard.ime.text.keyboard.TextKeyboardCache
+import dev.patrickgold.florisboard.ime.voiceinput.VoiceInputPermissionActivity
+import dev.patrickgold.florisboard.ime.voiceinput.VoiceInputState
 import dev.patrickgold.florisboard.lib.devtools.LogTopic
 import dev.patrickgold.florisboard.lib.devtools.flogError
 import dev.patrickgold.florisboard.lib.ext.ExtensionComponentName
@@ -62,6 +65,7 @@ import dev.patrickgold.florisboard.lib.uppercase
 import dev.patrickgold.florisboard.lib.util.InputMethodUtils
 import dev.patrickgold.florisboard.nlpManager
 import dev.patrickgold.florisboard.subtypeManager
+import dev.patrickgold.florisboard.voiceInputManager
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CoroutineScope
@@ -91,6 +95,7 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
     private val extensionManager by context.extensionManager()
     private val nlpManager by context.nlpManager()
     private val subtypeManager by context.subtypeManager()
+    private val voiceInputManager by context.voiceInputManager()
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
     val layoutManager = LayoutManager(context)
@@ -613,6 +618,39 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
     }
 
     /**
+     * Handles a [KeyCode.VOICE_INPUT] event. Tapping while idle starts a recording (after
+     * ensuring the RECORD_AUDIO permission is granted), tapping again stops it and sends the
+     * result off for transcription, committing the returned text once it arrives.
+     */
+    private fun handleVoiceInput() {
+        when (voiceInputManager.state.value) {
+            VoiceInputState.IDLE -> {
+                if (!voiceInputManager.hasRecordAudioPermission()) {
+                    appContext.startActivity(
+                        Intent(appContext, VoiceInputPermissionActivity::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        },
+                    )
+                    return
+                }
+                voiceInputManager.startRecording()
+            }
+            VoiceInputState.RECORDING -> {
+                voiceInputManager.stopRecordingAndTranscribe { result ->
+                    result.onSuccess { text ->
+                        editorInstance.commitText(text)
+                    }.onFailure {
+                        appContext.showShortToastSync(R.string.voice_input__transcription_error)
+                    }
+                }
+            }
+            VoiceInputState.TRANSCRIBING -> {
+                // Ignore taps while a transcription request is already in flight.
+            }
+        }
+    }
+
+    /**
      * Handles a [KeyCode.KANA_SWITCHER] event
      */
     private fun handleKanaSwitch() {
@@ -740,7 +778,7 @@ class KeyboardManager(context: Context) : InputKeyEventReceiver {
             KeyCode.IME_UI_MODE_TEXT -> activeState.imeUiMode = ImeUiMode.TEXT
             KeyCode.IME_UI_MODE_MEDIA -> activeState.imeUiMode = ImeUiMode.MEDIA
             KeyCode.IME_UI_MODE_CLIPBOARD -> activeState.imeUiMode = ImeUiMode.CLIPBOARD
-            KeyCode.VOICE_INPUT -> FlorisImeService.switchToVoiceInputMethod()
+            KeyCode.VOICE_INPUT -> handleVoiceInput()
             KeyCode.KANA_SWITCHER -> handleKanaSwitch()
             KeyCode.KANA_HIRA -> handleKanaHira()
             KeyCode.KANA_KATA -> handleKanaKata()
